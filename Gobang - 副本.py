@@ -1,4 +1,3 @@
-
 import pygame
 import sys,time,random,numpy
 
@@ -161,7 +160,6 @@ class main:
                 break;
          # 检查左侧（或上侧）4子是否五子相连(不包含落子)
         for x in range(current-1,current-5,-1):
-            
             if x<0:
                 break;
             elif axis[x] == self.value:
