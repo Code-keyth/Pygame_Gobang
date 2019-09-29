@@ -4,7 +4,7 @@ IMG_PATH='img/'
 GREEN=(0,255,0)
 class main:
     def __init__(self):
-        self.size=[966,966]
+        self.size=[1166,966]
         self.img_path=IMG_PATH+'qipan.jpg'
         self.unit=51.2
         self.state=0
@@ -17,13 +17,19 @@ class main:
         self.screen = pygame.display.set_mode(self.size)
         self.image=pygame.image.load(self.img_path)
         self.points = []
+        self.victory = [0,0]
 
     def start(self):
         pygame.display.init()
+        self.screen.fill((0,0,0))
         self.qipan_states=numpy.array([[0]*19]*19)
         self.screen.blit(self.image,[0,0])
         self.state=1
         self.points = []
+        self.draw_text('Victory in white ',(980,50),20)
+        self.draw_text('chess:'+str(self.victory[0])+' times',(980,80),20)
+        self.draw_text('Victory in black',(980,150),20)
+        self.draw_text('Vchess:'+str(self.victory[1])+' times',(980,180),20)
 
     def getEent(self):
         for event in pygame.event.get():
@@ -34,7 +40,7 @@ class main:
                         e_pos=event.pos
                         self.coordinate[0] = int(e_pos[0]/self.unit)
                         self.coordinate[1] = int(e_pos[1]/self.unit)
-                        if self.qipan_states[self.coordinate[1]][self.coordinate[0]] == 0:
+                        if  self.coordinate[1] < 19  and self.coordinate[0] < 19 and self.qipan_states[self.coordinate[1]][self.coordinate[0]] == 0:
                             if event.button == 1 and self.value != 1:
                                 self.value = event.button
                                 self.qipan_states[self.coordinate[1]][self.coordinate[0]]=1
@@ -49,19 +55,27 @@ class main:
                             
                         if self.state == 0:
                             pygame.draw.lines(self.screen, GREEN, 0, self.points, 5)
-                            tips_title = 'White Victory!' if (self.value ==1) else'Black Victory!'
-                            self.draw_text(tips_title,(370,100))
+                            if (self.value ==1):
+                                self.victory[0]+=1
+                                tips_title = 'White Victory!'
+                            else:
+                                self.victory[1]+=1
+                                tips_title = 'Black Victory!'
+                            te=self.draw_text(tips_title,(370,100))
+                            
                     else:
                         if event.button == 2:
                             self.start()
-
                 pygame.display.flip()
-    def draw_text(self, content,postion):
+                
+    def draw_text(self, content,postion,size=40):
         pygame.font.init()
-        font = pygame.font.SysFont('kaiti', 40)
+        font = pygame.font.SysFont('kaiti', size)
         text = font.render(content, True, GREEN)
         self.screen.blit(text, postion)
         
+
+
     def check(self):
         #X axis
         X_axis=self.qipan_states[self.coordinate[1]]
@@ -69,7 +83,7 @@ class main:
             return 0
         #Y axis
         Y_axis=self.qipan_states[:,self.coordinate[0]]
-        if self.straight_line(Y_axis,self.coordinate[1]) == 0:
+        if self.straight_line(Y_axis,self.coordinate[1],1) == 0:
             return 0
             
         #Diagonal line
@@ -122,14 +136,17 @@ class main:
                 break;
         return 0 if(continuity == 5) else 1
         
-    def straight_line(self,axis,current):
+    def straight_line(self,axis,current,is_y=0):
         continuity=0
         self.points=[]
         for x in range(current,current+5):
             if x>18:
                 break;
             elif axis[x] == self.value:
-                self.points.append([x*self.unit+22,self.coordinate[1]*self.unit+22])
+                if is_y == 1:
+                    self.points.append([self.coordinate[0]*self.unit+22,x*self.unit+22])
+                else:
+                    self.points.append([x*self.unit+22,self.coordinate[1]*self.unit+22])
                 continuity+=1
             else:
                 break;
@@ -138,7 +155,10 @@ class main:
             if x<0:
                 break;
             elif axis[x] == self.value:
-                self.points.insert(0,[x*self.unit+10,self.coordinate[1]*self.unit+22])
+                if is_y == 1:
+                    self.points.append([self.coordinate[0]*self.unit+22,x*self.unit+10])
+                else:
+                    self.points.append([x*self.unit+10,self.coordinate[1]*self.unit+22])
                 continuity+=1
             else:
                 break;
